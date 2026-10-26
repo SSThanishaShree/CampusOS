@@ -7,7 +7,7 @@ const ACCOUNT_KEY = window.CAMPUSOS_UID || "unavailable-user";
 const STORAGE = {
   items: `campusos-items-v1-${ACCOUNT_KEY}`,
   tasks: `campusos-tasks-v1-${ACCOUNT_KEY}`,
-  attendance: `campusos-attendance-v1-${ACCOUNT_KEY}`
+  timetable: `campusos-timetable-v1-${ACCOUNT_KEY}`
 };
 
 function loadData(key, fallback) {
@@ -65,7 +65,7 @@ const pageNames = {
   dashboard: "Dashboard",
   notices: "Campus notices",
   lost: "Lost & found",
-  attendance: "Attendance",
+  timetable: "Timetable",
   assignments: "Assignments"
 };
 
@@ -87,6 +87,7 @@ function showPage(name) {
   if (name === "dashboard") updateDashboard();
   if (name === "notices") renderNotices();
   if (name === "lost") renderItems();
+  if (name === "timetable") renderTimetable();
   if (name === "assignments") renderTasks();
 }
 
@@ -381,62 +382,366 @@ $("itemGrid").addEventListener("click", event => {
   }
 });
 
-// ---------------- ATTENDANCE CALCULATOR ----------------
+// ---------------- TIMETABLE MANAGER ----------------
 
-const savedAttendance = loadData(STORAGE.attendance, {
-  subject: "",
-  attended: 18,
-  total: 24,
-  target: 85
+const sampleClasses = [
+  {
+    id: "tt-sample-1",
+    subject: "Data Structures & Algorithms",
+    day: "Monday",
+    startTime: "09:00",
+    endTime: "10:00",
+    location: "Mech Block - Room 302",
+    faculty: "Dr. Ramesh Kumar",
+    notes: "Lecture on Balanced Binary Trees"
+  },
+  {
+    id: "tt-sample-2",
+    subject: "Operating Systems",
+    day: "Monday",
+    startTime: "10:15",
+    endTime: "11:15",
+    location: "CS Block - Room 201",
+    faculty: "Prof. Priya Nair",
+    notes: "Process Synchronization and Semaphores"
+  },
+  {
+    id: "tt-sample-3",
+    subject: "Database Management Systems Lab",
+    day: "Tuesday",
+    startTime: "11:30",
+    endTime: "13:30",
+    location: "Lab Complex - Lab 3",
+    faculty: "Dr. Anand K",
+    notes: "Bring lab record and pen drive"
+  },
+  {
+    id: "tt-sample-4",
+    subject: "Computer Networks",
+    day: "Wednesday",
+    startTime: "09:00",
+    endTime: "10:00",
+    location: "Mech Block - Room 302",
+    faculty: "Prof. Anita Rao",
+    notes: "Subnetting and IP addressing"
+  },
+  {
+    id: "tt-sample-5",
+    subject: "Software Engineering",
+    day: "Thursday",
+    startTime: "14:00",
+    endTime: "15:00",
+    location: "CS Block - Room 105",
+    faculty: "Dr. Sunitha M",
+    notes: "Agile sprint planning review"
+  },
+  {
+    id: "tt-sample-6",
+    subject: "Design and Analysis of Algorithms",
+    day: "Friday",
+    startTime: "10:15",
+    endTime: "11:15",
+    location: "CS Block - Room 201",
+    faculty: "Dr. Ramesh Kumar",
+    notes: "Dynamic Programming practice"
+  }
+];
+
+const subjectColorPalette = [
+  { bg: "#eaf0ff", color: "#4559db", border: "#c6d3ff" },
+  { bg: "#e5f8ee", color: "#14865f", border: "#b8ebd1" },
+  { bg: "#fff0e5", color: "#c5763b", border: "#fbd3bb" },
+  { bg: "#f0eaff", color: "#7a4dc9", border: "#dfcffc" },
+  { bg: "#e6f5fa", color: "#1b839b", border: "#bfe5f0" },
+  { bg: "#fcebf2", color: "#b33d74", border: "#f7c7dc" }
+];
+
+function getSubjectTheme(subject) {
+  let hash = 0;
+  const str = (subject || "").trim().toLowerCase();
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  const index = Math.abs(hash) % subjectColorPalette.length;
+  return subjectColorPalette[index];
+}
+
+function formatTime(timeStr) {
+  if (!timeStr) return "";
+  const parts = timeStr.split(":").map(Number);
+  if (parts.length < 2 || Number.isNaN(parts[0]) || Number.isNaN(parts[1])) return timeStr;
+  const [h, m] = parts;
+  const ampm = h >= 12 ? "PM" : "AM";
+  const hours = h % 12 || 12;
+  const minutes = String(m).padStart(2, "0");
+  return `${hours}:${minutes} ${ampm}`;
+}
+
+function getDurationText(startTime, endTime) {
+  const [h1, m1] = startTime.split(":").map(Number);
+  const [h2, m2] = endTime.split(":").map(Number);
+  const totalMins = (h2 * 60 + m2) - (h1 * 60 + m1);
+  if (totalMins <= 0) return "";
+  if (totalMins < 60) return `${totalMins}m`;
+  const hrs = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  return mins ? `${hrs}h ${mins}m` : `${hrs}h`;
+}
+
+const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+let timetable = loadData(STORAGE.timetable, sampleClasses);
+if (!Array.isArray(timetable)) timetable = [...sampleClasses];
+
+let timetableActiveDay = "All";
+
+function openTimetableModal(editId = null) {
+  const form = $("timetableForm");
+  form.reset();
+
+  if (editId) {
+    const entry = timetable.find(item => item.id === editId);
+    if (!entry) return;
+    $("timetableModalTitle").textContent = "Edit class";
+    $("ttSubmitButton").textContent = "Update class ↗";
+    $("ttEntryId").value = entry.id;
+    $("ttSubject").value = entry.subject;
+    $("ttDay").value = entry.day;
+    $("ttLocation").value = entry.location;
+    $("ttStartTime").value = entry.startTime;
+    $("ttEndTime").value = entry.endTime;
+    $("ttFaculty").value = entry.faculty || "";
+    $("ttNotes").value = entry.notes || "";
+  } else {
+    $("timetableModalTitle").textContent = "Add class";
+    $("ttSubmitButton").textContent = "Save class ↗";
+    $("ttEntryId").value = "";
+    if (timetableActiveDay !== "All" && WEEKDAYS.includes(timetableActiveDay)) {
+      $("ttDay").value = timetableActiveDay;
+    } else {
+      $("ttDay").value = "Monday";
+    }
+    $("ttStartTime").value = "09:00";
+    $("ttEndTime").value = "10:00";
+  }
+
+  openModal("timetableModal");
+}
+
+$("openTimetable").addEventListener("click", () => openTimetableModal());
+$("emptyAddTimetable").addEventListener("click", () => openTimetableModal());
+
+$("timetableDayTabs").addEventListener("click", event => {
+  const button = event.target.closest("[data-day]");
+  if (!button) return;
+  timetableActiveDay = button.dataset.day;
+
+  document.querySelectorAll("#timetableDayTabs .tab").forEach(tab => {
+    tab.classList.toggle("active", tab === button);
+  });
+
+  renderTimetable();
 });
 
-$("attendanceSubject").value = savedAttendance.subject;
-$("attended").value = savedAttendance.attended;
-$("totalClasses").value = savedAttendance.total;
-$("targetAttendance").value = savedAttendance.target;
+$("timetableForm").addEventListener("submit", event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const entryId = $("ttEntryId").value;
+  const subject = $("ttSubject").value.trim();
+  const day = $("ttDay").value;
+  const location = $("ttLocation").value.trim();
+  const startTime = $("ttStartTime").value;
+  const endTime = $("ttEndTime").value;
+  const faculty = $("ttFaculty").value.trim();
+  const notes = $("ttNotes").value.trim();
 
-function calculateAttendance() {
-  const subject = $("attendanceSubject").value.trim();
-  const attended = Number($("attended").value);
-  const total = Number($("totalClasses").value);
-  const target = Number($("targetAttendance").value);
-
-  if (!subject || !Number.isInteger(attended) || !Number.isInteger(total) ||
-      attended < 0 || total < 1 || attended > total ||
-      !Number.isFinite(target) || target <= 0 || target > 100) {
-    toast("Enter a valid subject, class count and target.");
+  if (!subject || !day || !location || !startTime || !endTime) {
+    toast("Please complete all required fields.");
     return;
   }
 
-  const percent = attended / total * 100;
-  const needed = Math.max(0, Math.ceil((target * total - 100 * attended) / (100 - target)));
-  const canMiss = target === 100
-    ? (percent === 100 ? "No" : "0")
-    : Math.max(0, Math.floor((100 * attended / target) - total));
+  if (startTime >= endTime) {
+    toast("End time must be later than start time.");
+    return;
+  }
 
-  $("attendancePercent").textContent = `${percent.toFixed(1)}%`;
-  $("attendanceRing").style.background =
-    `conic-gradient(var(--blue) ${Math.min(percent, 100) * 3.6}deg, #edf0f7 0deg)`;
+  const [h1, m1] = startTime.split(":").map(Number);
+  const [h2, m2] = endTime.split(":").map(Number);
+  const duration = (h2 * 60 + m2) - (h1 * 60 + m1);
+  if (duration < 15) {
+    toast("Class duration must be at least 15 minutes.");
+    return;
+  }
 
-  $("attendanceVerdict").textContent =
-    percent >= target ? "Target reached!" : "Target not reached yet";
+  if (entryId) {
+    const existing = timetable.find(item => item.id === entryId);
+    if (existing) {
+      existing.subject = subject;
+      existing.day = day;
+      existing.location = location;
+      existing.startTime = startTime;
+      existing.endTime = endTime;
+      existing.faculty = faculty;
+      existing.notes = notes;
+      toast("Class updated successfully!");
+    }
+  } else {
+    const newEntry = {
+      id: "tt-" + Date.now(),
+      subject,
+      day,
+      location,
+      startTime,
+      endTime,
+      faculty,
+      notes
+    };
+    timetable.push(newEntry);
+    toast("Class added to timetable!");
+  }
 
-  $("attendanceMessage").textContent = percent >= target
-    ? `Your ${subject} attendance is currently above your target. You may be able to miss up to ${canMiss} consecutive classes and remain at or above the target, based on this calculation.`
-    : `Attend the next ${needed} consecutive classes without missing any to reach at least ${target}% (assuming no other classes are added or missed).`;
+  saveData(STORAGE.timetable, timetable);
+  closeModal("timetableModal");
+  form.reset();
+  renderTimetable();
+});
 
-  $("resultAttended").textContent = attended;
-  $("resultTotal").textContent = total;
-  $("resultTarget").textContent = `${target}%`;
+$("timetableContent").addEventListener("click", event => {
+  const editBtn = event.target.closest("[data-tt-edit]");
+  if (editBtn) {
+    openTimetableModal(editBtn.dataset.ttEdit);
+    return;
+  }
 
-  saveData(STORAGE.attendance, { subject, attended, total, target });
-  $("dashAttendance").textContent = `${percent.toFixed(1)}%`;
+  const deleteBtn = event.target.closest("[data-tt-delete]");
+  if (deleteBtn) {
+    const id = deleteBtn.dataset.ttDelete;
+    const entry = timetable.find(item => item.id === id);
+    if (!entry) return;
+    if (!confirm(`Delete "${entry.subject}" on ${entry.day}?`)) return;
+
+    timetable = timetable.filter(item => item.id !== id);
+    saveData(STORAGE.timetable, timetable);
+    renderTimetable();
+    toast("Class deleted from timetable.");
+  }
+});
+
+function renderClassCard(entry) {
+  const theme = getSubjectTheme(entry.subject);
+  const duration = getDurationText(entry.startTime, entry.endTime);
+  return `
+    <article class="class-card" style="border-left: 4px solid ${theme.color};">
+      <div class="class-time-col">
+        <span class="class-time-start">${esc(formatTime(entry.startTime))}</span>
+        <span class="class-time-end">${esc(formatTime(entry.endTime))}</span>
+        ${duration ? `<span class="class-duration">${esc(duration)}</span>` : ""}
+      </div>
+      <div class="class-details">
+        <div class="class-header">
+          <span class="class-badge" style="background:${theme.bg}; color:${theme.color}; border:1px solid ${theme.border};">
+            ${esc(entry.subject)}
+          </span>
+          <div class="class-actions">
+            <button class="small-action-btn edit-btn" data-tt-edit="${esc(entry.id)}" title="Edit class" aria-label="Edit ${esc(entry.subject)}">✎ Edit</button>
+            <button class="small-action-btn delete-icon-btn" data-tt-delete="${esc(entry.id)}" title="Delete class" aria-label="Delete ${esc(entry.subject)}">×</button>
+          </div>
+        </div>
+        <div class="class-meta">
+          <span class="class-meta-item">
+            <i class="meta-icon">⌖</i> ${esc(entry.location)}
+          </span>
+          ${entry.faculty ? `
+            <span class="class-meta-item">
+              <i class="meta-icon">👤</i> ${esc(entry.faculty)}
+            </span>
+          ` : ""}
+        </div>
+        ${entry.notes ? `<p class="class-notes">${esc(entry.notes)}</p>` : ""}
+      </div>
+    </article>
+  `;
 }
 
-$("attendanceForm").addEventListener("submit", event => {
-  event.preventDefault();
-  calculateAttendance();
-});
+function renderTimetable() {
+  const todayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
+
+  // Update stat indicators
+  $("ttTotalClasses").textContent = timetable.length;
+  $("ttTodayClasses").textContent = timetable.filter(item => item.day === todayName).length;
+  const uniqueSubjects = new Set(timetable.map(item => item.subject.trim().toLowerCase()));
+  $("ttTotalSubjects").textContent = uniqueSubjects.size;
+
+  if (timetable.length === 0) {
+    $("timetableContent").innerHTML = "";
+    $("timetableContent").hidden = true;
+    $("timetableEmpty").hidden = false;
+    updateDashboard();
+    return;
+  }
+
+  $("timetableEmpty").hidden = true;
+  $("timetableContent").hidden = false;
+
+  const compareTime = (a, b) => a.startTime.localeCompare(b.startTime);
+
+  if (timetableActiveDay === "All") {
+    const daysHtml = WEEKDAYS.map(day => {
+      const dayClasses = timetable.filter(item => item.day === day).sort(compareTime);
+      const isToday = day === todayName;
+
+      return `
+        <section class="timetable-day-card ${isToday ? 'is-today' : ''}">
+          <div class="day-card-header">
+            <div class="day-header-title">
+              <h3>${esc(day)}</h3>
+              ${isToday ? `<span class="today-indicator">TODAY</span>` : ""}
+            </div>
+            <span class="day-count-badge">${dayClasses.length} ${dayClasses.length === 1 ? 'class' : 'classes'}</span>
+          </div>
+          <div class="day-classes-list">
+            ${dayClasses.length > 0
+              ? dayClasses.map(renderClassCard).join("")
+              : `<div class="day-empty-note">No classes scheduled for ${esc(day)}.</div>`
+            }
+          </div>
+        </section>
+      `;
+    }).join("");
+
+    $("timetableContent").innerHTML = `<div class="timetable-grid">${daysHtml}</div>`;
+  } else {
+    const dayClasses = timetable.filter(item => item.day === timetableActiveDay).sort(compareTime);
+    const isToday = timetableActiveDay === todayName;
+
+    $("timetableContent").innerHTML = `
+      <section class="timetable-day-card single-day-view ${isToday ? 'is-today' : ''}">
+        <div class="day-card-header">
+          <div class="day-header-title">
+            <h3>${esc(timetableActiveDay)}</h3>
+            ${isToday ? `<span class="today-indicator">TODAY</span>` : ""}
+          </div>
+          <span class="day-count-badge">${dayClasses.length} ${dayClasses.length === 1 ? 'class' : 'classes'}</span>
+        </div>
+        <div class="day-classes-list">
+          ${dayClasses.length > 0
+            ? dayClasses.map(renderClassCard).join("")
+            : `
+              <div class="empty-state day-empty-state">
+                <h3>No classes on ${esc(timetableActiveDay)}</h3>
+                <p>You have a free day, or you can schedule classes using the button below.</p>
+                <button class="btn primary-btn" onclick="document.getElementById('openTimetable').click()">+ Add class for ${esc(timetableActiveDay)}</button>
+              </div>
+            `
+          }
+        </div>
+      </section>
+    `;
+  }
+
+  updateDashboard();
+}
 
 // ---------------- ASSIGNMENT MANAGER ----------------
 
@@ -552,12 +857,10 @@ function updateDashboard() {
   $("dashNotices").textContent = notices.length;
   $("dashLost").textContent = items.length;
 
-  const saved = loadData(STORAGE.attendance, null);
-  if (saved && saved.total > 0 && saved.attended >= 0 && saved.attended <= saved.total) {
-    $("dashAttendance").textContent =
-      `${(saved.attended / saved.total * 100).toFixed(1)}%`;
-  } else {
-    $("dashAttendance").textContent = "—";
+  const todayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
+  const todayClasses = timetable ? timetable.filter(item => item.day === todayName).length : 0;
+  if ($("dashTimetable")) {
+    $("dashTimetable").textContent = todayClasses;
   }
 
   $("dashTasks").textContent = tasks.filter(task => !task.completed).length;
@@ -567,11 +870,7 @@ function updateDashboard() {
 
 renderNotices();
 renderItems();
+renderTimetable();
 renderTasks();
-
-if (savedAttendance.subject) {
-  calculateAttendance();
-} else {
-  updateDashboard();
-}
+updateDashboard();
 

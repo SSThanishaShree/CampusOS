@@ -49,7 +49,7 @@
       <button class="nav-link" data-page="lost"><span>⌕</span> Lost & found</button>
 
       <div class="nav-label">MY STUDIES</div>
-      <button class="nav-link" data-page="attendance"><span>◷</span> Attendance</button>
+      <button class="nav-link" data-page="timetable"><span>▦</span> Timetable</button>
       <button class="nav-link" data-page="assignments"><span>☷</span> Assignments</button>
 
       <div class="sidebar-bottom">
@@ -103,7 +103,7 @@
           <div class="stat-grid">
             <button class="stat-card" data-go="notices"><span class="stat-symbol violet">▤</span><span class="stat-number" id="dashNotices">4</span><span class="stat-name">Notice categories</span><span class="stat-foot">Explore updates ↗</span></button>
             <button class="stat-card" data-go="lost"><span class="stat-symbol orange">⌕</span><span class="stat-number" id="dashLost">6</span><span class="stat-name">Item reports</span><span class="stat-foot">Open lost & found ↗</span></button>
-            <button class="stat-card" data-go="attendance"><span class="stat-symbol green">◷</span><span class="stat-number" id="dashAttendance">—</span><span class="stat-name">Your attendance</span><span class="stat-foot">Calculate attendance ↗</span></button>
+            <button class="stat-card" data-go="timetable"><span class="stat-symbol blue">▦</span><span class="stat-number" id="dashTimetable">0</span><span class="stat-name">Classes today</span><span class="stat-foot">View schedule ↗</span></button>
             <button class="stat-card" data-go="assignments"><span class="stat-symbol blue">☷</span><span class="stat-number" id="dashTasks">0</span><span class="stat-name">Pending assignments</span><span class="stat-foot">Manage your work ↗</span></button>
           </div>
 
@@ -113,7 +113,7 @@
               <div class="quick-grid">
                 <button class="quick-action" data-go="notices"><span class="quick-icon q-violet">▤</span><b>Campus notices</b><small>Find official updates</small><span class="quick-arrow">↗</span></button>
                 <button class="quick-action" data-go="lost"><span class="quick-icon q-orange">⌕</span><b>Report an item</b><small>Lost something?</small><span class="quick-arrow">↗</span></button>
-                <button class="quick-action" data-go="attendance"><span class="quick-icon q-green">◷</span><b>Check attendance</b><small>Calculate your target</small><span class="quick-arrow">↗</span></button>
+                <button class="quick-action" data-go="timetable"><span class="quick-icon q-blue">▦</span><b>Weekly timetable</b><small>View & manage schedule</small><span class="quick-arrow">↗</span></button>
                 <button class="quick-action" data-go="assignments"><span class="quick-icon q-blue">☷</span><b>My assignments</b><small>Track your deadlines</small><span class="quick-arrow">↗</span></button>
               </div>
             </section>
@@ -149,21 +149,53 @@
           <div id="itemEmpty" class="empty-state" hidden><h3>No matching items</h3><p>Try another search or create a new report.</p></div>
         </section>
 
-        <section class="page" id="page-attendance">
-          <div class="page-heading"><div><div class="eyebrow">PLAN YOUR CLASSES</div><h1>Attendance tracker<span class="period">.</span></h1><p>Calculate your attendance percentage and the classes needed to reach your goal.</p></div></div>
-          <div class="notice-banner"><span class="banner-icon">◷</span><div><b>Use your actual class records</b><p>This calculator is for planning only. Check your college's official attendance rules before making decisions.</p></div></div>
-          <div class="study-layout">
-            <section class="panel form-panel"><div class="panel-heading"><div><h3>Your attendance</h3><p>Enter the numbers for one subject.</p></div></div>
-              <form id="attendanceForm" class="stack-form">
-                <label>Subject name<input id="attendanceSubject" placeholder="e.g. Digital Electronics" maxlength="70" required></label>
-                <div class="two-fields"><label>Classes attended<input id="attended" type="number" min="0" step="1" value="18" required></label><label>Total classes held<input id="totalClasses" type="number" min="1" step="1" value="24" required></label></div>
-                <label>Target attendance (%)<input id="targetAttendance" type="number" min="1" max="100" value="85" required></label>
-                <button class="btn primary-btn" type="submit">Calculate attendance ↗</button>
-              </form>
-            </section>
-            <section class="panel attendance-result"><span class="eyebrow">YOUR RESULT</span><div class="attendance-ring" id="attendanceRing"><div><strong id="attendancePercent">75%</strong><small>ATTENDANCE</small></div></div><h3 id="attendanceVerdict">Calculation preview</h3><p id="attendanceMessage">Submit your class numbers to calculate your result.</p><div class="result-stats"><div><span>Attended</span><b id="resultAttended">18</b></div><div><span>Total classes</span><b id="resultTotal">24</b></div><div><span>Target</span><b id="resultTarget">85%</b></div></div></section>
+        <section class="page" id="page-timetable">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">YOUR WEEKLY SCHEDULE</div>
+              <h1>Weekly timetable<span class="period">.</span></h1>
+              <p>Organise and track your lectures, labs, classrooms, and faculty timings.</p>
+            </div>
+            <button class="btn primary-btn" id="openTimetable">+ Add class</button>
           </div>
-          <div class="notice-disclaimer">Formula: attended classes ÷ total classes × 100. Classes needed assumes every future class is attended. Results are estimates, not an official eligibility determination.</div>
+
+          <div class="stat-grid timetable-stats">
+            <div class="stat-card">
+              <span class="stat-symbol blue">▦</span>
+              <span class="stat-number" id="ttTotalClasses">0</span>
+              <span class="stat-name">Total weekly classes</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-symbol green">◷</span>
+              <span class="stat-number" id="ttTodayClasses">0</span>
+              <span class="stat-name">Classes scheduled today</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-symbol violet">▤</span>
+              <span class="stat-number" id="ttTotalSubjects">0</span>
+              <span class="stat-name">Active subjects</span>
+            </div>
+          </div>
+
+          <div class="timetable-toolbar">
+            <div class="tabs" id="timetableDayTabs" role="tablist" aria-label="Filter timetable by day">
+              <button class="tab active" data-day="All">All days</button>
+              <button class="tab" data-day="Monday">Monday</button>
+              <button class="tab" data-day="Tuesday">Tuesday</button>
+              <button class="tab" data-day="Wednesday">Wednesday</button>
+              <button class="tab" data-day="Thursday">Thursday</button>
+              <button class="tab" data-day="Friday">Friday</button>
+              <button class="tab" data-day="Saturday">Saturday</button>
+            </div>
+          </div>
+
+          <div id="timetableContent" class="timetable-content"></div>
+
+          <div id="timetableEmpty" class="empty-state" hidden>
+            <h3>No classes scheduled yet</h3>
+            <p>Add your weekly lectures, labs, and tutorials to stay on top of your schedule.</p>
+            <button class="btn primary-btn" id="emptyAddTimetable">+ Add class</button>
+          </div>
         </section>
 
         <section class="page" id="page-assignments">
@@ -195,6 +227,54 @@
       <button class="btn primary-btn full-btn" type="submit">Save assignment ↗</button>
     </form>
   </section></div>
+
+  <div class="modal-backdrop" id="timetableModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="timetableModalTitle">
+      <div class="modal-heading">
+        <div>
+          <div class="eyebrow">CLASS SCHEDULE</div>
+          <h2 id="timetableModalTitle">Add class</h2>
+        </div>
+        <button class="close-btn" data-close="timetableModal" aria-label="Close">×</button>
+      </div>
+      <form id="timetableForm" class="stack-form">
+        <input type="hidden" name="id" id="ttEntryId">
+        <label>Subject name
+          <input name="subject" id="ttSubject" required maxlength="70" placeholder="e.g. Data Structures &amp; Algorithms">
+        </label>
+        <div class="two-fields">
+          <label>Day of the week
+            <select name="day" id="ttDay" required>
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Friday">Friday</option>
+              <option value="Saturday">Saturday</option>
+            </select>
+          </label>
+          <label>Classroom / Location
+            <input name="location" id="ttLocation" required maxlength="60" placeholder="e.g. Mech Block - Room 302">
+          </label>
+        </div>
+        <div class="two-fields">
+          <label>Start time
+            <input name="startTime" id="ttStartTime" type="time" required>
+          </label>
+          <label>End time
+            <input name="endTime" id="ttEndTime" type="time" required>
+          </label>
+        </div>
+        <label>Faculty name
+          <input name="faculty" id="ttFaculty" maxlength="70" placeholder="e.g. Dr. Ramesh Kumar">
+        </label>
+        <label>Optional notes
+          <textarea name="notes" id="ttNotes" rows="2" maxlength="200" placeholder="e.g. Bring lab record, Bi-weekly tutorial"></textarea>
+        </label>
+        <button class="btn primary-btn full-btn" type="submit" id="ttSubmitButton">Save class ↗</button>
+      </form>
+    </section>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="auth.js"></script>
