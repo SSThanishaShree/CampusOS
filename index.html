@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>CampusOS | BMSCE Student Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<section class="auth-screen" id="authScreen" aria-labelledby="authTitle">
+    <div class="auth-card">
+      <div class="auth-brand"><span class="brand-mark">C</span><span>Campus<span class="muted-brand">OS</span><small>BMSCE STUDENT HUB</small></span></div>
+      <div class="eyebrow">YOUR CAMPUS, SIMPLIFIED</div>
+      <h1 id="authTitle">Welcome to <span>CampusOS.</span></h1>
+      <p class="auth-intro">Sign in with your BMSCE email to access your student workspace.</p>
+      <div class="auth-tabs" role="tablist" aria-label="Account options">
+        <button type="button" class="auth-tab active" id="showLogin">Sign in</button>
+        <button type="button" class="auth-tab" id="showSignup">Create account</button>
+      </div>
+      <form id="loginForm" class="stack-form auth-form">
+        <label>College email<input id="loginEmail" type="email" autocomplete="email" required placeholder="you@bmsce.ac.in"></label>
+        <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="Your password"></label>
+        <button class="btn primary-btn full-btn" type="submit" id="loginButton">Sign in ↗</button>
+        <button type="button" class="auth-text-button" id="forgotPassword">Forgot password?</button>
+      </form>
+      <form id="signupForm" class="stack-form auth-form" hidden>
+        <label>Full name<input id="signupName" type="text" autocomplete="name" required maxlength="80" placeholder="Your name"></label>
+        <label>College email<input id="signupEmail" type="email" autocomplete="email" required placeholder="you@bmsce.ac.in"></label>
+        <label>Create password<input id="signupPassword" type="password" autocomplete="new-password" required minlength="6" placeholder="At least 6 characters"></label>
+        <button class="btn primary-btn full-btn" type="submit" id="signupButton">Create account & verify email ↗</button>
+      </form>
+      <div id="authMessage" class="auth-message" role="status" aria-live="polite"></div>
+      <p class="auth-footnote">Email verification is required. Use only an address you control. This prototype checks the email domain but does not independently verify student enrollment.</p>
+    </div>
+  </section>
+
+  <div class="app" id="campusApp" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="#" data-page="dashboard">
+        <span class="brand-mark">C</span>
+        <span>Campus<span class="muted-brand">OS</span><small>BMSCE STUDENT HUB</small></span>
+      </a>
+
+      <div class="nav-label">WORKSPACE</div>
+      <button class="nav-link active" data-page="dashboard"><span>◫</span> Dashboard</button>
+      <button class="nav-link" data-page="notices"><span>▤</span> Campus notices <i>NEW</i></button>
+      <button class="nav-link" data-page="lost"><span>⌕</span> Lost & found</button>
+
+      <div class="nav-label">MY STUDIES</div>
+      <button class="nav-link" data-page="attendance"><span>◷</span> Attendance</button>
+      <button class="nav-link" data-page="assignments"><span>☷</span> Assignments</button>
+
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <span class="help-icon">✳</span>
+          <b>Built for student life.</b>
+          <p>Your college essentials, all in one place.</p>
+        </div>
+        <div class="profile">
+          <div class="avatar" id="profileAvatar">B</div>
+          <div class="profile-details"><b id="profileName">BMSCE Student</b><small id="profileEmail">Verified student</small></div>
+          <button type="button" class="logout-btn" id="logoutButton" title="Sign out" aria-label="Sign out">↪</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Toggle navigation">☰</button>
+        <div class="breadcrumb">Workspace <span>/</span> <b id="crumb">Dashboard</b></div>
+        <div class="topbar-right"><span class="online-dot"></span><span class="topbar-user-label" id="topbarUserEmail">Your student hub</span><span class="top-avatar" id="topAvatar">B</span></div>
+      </header>
+
+      <div class="content">
+        <section class="page active" id="page-dashboard">
+          <div class="welcome">
+            <div>
+              <div class="eyebrow">MONDAY MINDSET. BETTER CAMPUS LIFE.</div>
+              <h1>Your campus, <span>simplified.</span></h1>
+              <p>One space for college updates, lost belongings and your daily academic life.</p>
+            </div>
+            <div class="date-chip"><span>◷</span><span id="todayDate">Your student dashboard</span></div>
+          </div>
+
+          <div class="hero-panel">
+            <div class="hero-copy">
+              <span class="hero-tag">✦ YOUR BMSCE COMPANION</span>
+              <h2>Less searching.<br>More doing.</h2>
+              <p>Stay informed, keep track of your work, and make everyday campus life a little easier.</p>
+              <button class="btn light-btn" data-go="notices">Explore campus notices ↗</button>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+              <div class="art-ring ring-a"></div><div class="art-ring ring-b"></div>
+              <div class="art-tile tile-a">▤<small>UPDATES</small></div>
+              <div class="art-tile tile-b">✓<small>YOUR TASKS</small></div>
+              <div class="art-center">C<span>+</span></div>
+            </div>
+          </div>
+
+          <div class="section-title"><div><h2>Your overview</h2><p>A quick snapshot of your workspace.</p></div><span class="subtle-label">LIVE FROM YOUR BROWSER</span></div>
+          <div class="stat-grid">
+            <button class="stat-card" data-go="notices"><span class="stat-symbol violet">▤</span><span class="stat-number" id="dashNotices">4</span><span class="stat-name">Notice categories</span><span class="stat-foot">Explore updates ↗</span></button>
+            <button class="stat-card" data-go="lost"><span class="stat-symbol orange">⌕</span><span class="stat-number" id="dashLost">6</span><span class="stat-name">Item reports</span><span class="stat-foot">Open lost & found ↗</span></button>
+            <button class="stat-card" data-go="attendance"><span class="stat-symbol green">◷</span><span class="stat-number" id="dashAttendance">—</span><span class="stat-name">Your attendance</span><span class="stat-foot">Calculate attendance ↗</span></button>
+            <button class="stat-card" data-go="assignments"><span class="stat-symbol blue">☷</span><span class="stat-number" id="dashTasks">0</span><span class="stat-name">Pending assignments</span><span class="stat-foot">Manage your work ↗</span></button>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel">
+              <div class="panel-heading"><div><h3>Quick actions</h3><p>Jump straight into what you need.</p></div></div>
+              <div class="quick-grid">
+                <button class="quick-action" data-go="notices"><span class="quick-icon q-violet">▤</span><b>Campus notices</b><small>Find official updates</small><span class="quick-arrow">↗</span></button>
+                <button class="quick-action" data-go="lost"><span class="quick-icon q-orange">⌕</span><b>Report an item</b><small>Lost something?</small><span class="quick-arrow">↗</span></button>
+                <button class="quick-action" data-go="attendance"><span class="quick-icon q-green">◷</span><b>Check attendance</b><small>Calculate your target</small><span class="quick-arrow">↗</span></button>
+                <button class="quick-action" data-go="assignments"><span class="quick-icon q-blue">☷</span><b>My assignments</b><small>Track your deadlines</small><span class="quick-arrow">↗</span></button>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading"><div><h3>Campus noticeboard</h3><p>Official sources and helpful links.</p></div><button class="text-btn" data-go="notices">View all ↗</button></div>
+              <div class="mini-notices">
+                <a href="https://bmsce.ac.in/home/Notifications" target="_blank" rel="noopener noreferrer"><span class="mini-icon">▤</span><span><b>College notifications</b><small>Official circulars and updates</small></span><span>↗</span></a>
+                <a href="https://bmsce.ac.in/home/COE-Notifications" target="_blank" rel="noopener noreferrer"><span class="mini-icon">◷</span><span><b>Examination notices</b><small>Check the official COE page</small></span><span>↗</span></a>
+                <a href="https://bmsce.ac.in/" target="_blank" rel="noopener noreferrer"><span class="mini-icon">⌂</span><span><b>BMSCE official website</b><small>College information and news</small></span><span>↗</span></a>
+              </div>
+              <p class="source-note">Always verify dates and deadlines with official sources.</p>
+            </section>
+          </div>
+          <div class="footer-note">CAMPUSOS · A STUDENT-BUILT HACKATHON PROTOTYPE</div>
+        </section>
+
+        <section class="page" id="page-notices">
+          <div class="page-heading"><div><div class="eyebrow">STAY IN THE LOOP</div><h1>Campus notices<span class="period">.</span></h1><p>Find college updates and jump to official BMSCE information.</p></div><span class="status-pill">SOURCE-LINKED</span></div>
+          <div class="notice-banner"><span class="banner-icon">↗</span><div><b>Check the official source</b><p>Use these links for current circulars, exam notifications and college news. This prototype does not automatically import college announcements.</p></div><a class="btn primary-btn" href="https://bmsce.ac.in/home/Notifications" target="_blank" rel="noopener noreferrer">Official notices ↗</a></div>
+          <div class="filter-row"><label class="search-field"><span>⌕</span><input id="noticeSearch" placeholder="Search notices and resources..."></label><select id="noticeCategory"><option value="All">All categories</option><option>Academics</option><option>Examinations</option><option>Events</option><option>Placements</option><option>College information</option></select></div>
+          <div class="section-title"><div><h2>Student resources</h2><p>Curated links, clearly labelled by topic.</p></div><span class="subtle-label" id="noticeCount">4 RESOURCES</span></div>
+          <div class="notice-grid" id="noticeGrid"></div>
+          <div class="notice-disclaimer">These are source links and general resource descriptions, not verified announcements about specific events. No event dates or placement drives are being claimed.</div>
+        </section>
+
+        <section class="page" id="page-lost">
+          <div class="page-heading"><div><div class="eyebrow">HELP YOUR CAMPUS COMMUNITY</div><h1>Lost & found<span class="period">.</span></h1><p>Report belongings and browse sample campus listings.</p></div><button class="btn primary-btn" id="openReport">+ Report an item</button></div>
+          <div class="notice-banner"><span class="banner-icon">ⓘ</span><div><b>Prototype mode</b><p>Reports are stored in this browser only. Don't post sensitive IDs, addresses or private personal information.</p></div></div>
+          <div class="filter-row"><label class="search-field"><span>⌕</span><input id="itemSearch" placeholder="Search items or locations..."></label><select id="itemCategory"><option value="All">All categories</option><option>Electronics</option><option>ID & Cards</option><option>Bags</option><option>Keys</option><option>Books</option><option>Other</option></select></div>
+          <div class="tabs" id="itemTabs"><button class="tab active" data-status="All">All</button><button class="tab" data-status="Lost">Lost</button><button class="tab" data-status="Found">Found</button><button class="tab" data-status="Returned">Returned</button></div>
+          <div class="section-title"><div><h2>Community reports</h2><p id="itemResultCount">Latest reports.</p></div></div>
+          <div class="item-grid" id="itemGrid"></div>
+          <div id="itemEmpty" class="empty-state" hidden><h3>No matching items</h3><p>Try another search or create a new report.</p></div>
+        </section>
+
+        <section class="page" id="page-attendance">
+          <div class="page-heading"><div><div class="eyebrow">PLAN YOUR CLASSES</div><h1>Attendance tracker<span class="period">.</span></h1><p>Calculate your attendance percentage and the classes needed to reach your goal.</p></div></div>
+          <div class="notice-banner"><span class="banner-icon">◷</span><div><b>Use your actual class records</b><p>This calculator is for planning only. Check your college's official attendance rules before making decisions.</p></div></div>
+          <div class="study-layout">
+            <section class="panel form-panel"><div class="panel-heading"><div><h3>Your attendance</h3><p>Enter the numbers for one subject.</p></div></div>
+              <form id="attendanceForm" class="stack-form">
+                <label>Subject name<input id="attendanceSubject" placeholder="e.g. Digital Electronics" maxlength="70" required></label>
+                <div class="two-fields"><label>Classes attended<input id="attended" type="number" min="0" step="1" value="18" required></label><label>Total classes held<input id="totalClasses" type="number" min="1" step="1" value="24" required></label></div>
+                <label>Target attendance (%)<input id="targetAttendance" type="number" min="1" max="100" value="85" required></label>
+                <button class="btn primary-btn" type="submit">Calculate attendance ↗</button>
+              </form>
+            </section>
+            <section class="panel attendance-result"><span class="eyebrow">YOUR RESULT</span><div class="attendance-ring" id="attendanceRing"><div><strong id="attendancePercent">75%</strong><small>ATTENDANCE</small></div></div><h3 id="attendanceVerdict">Calculation preview</h3><p id="attendanceMessage">Submit your class numbers to calculate your result.</p><div class="result-stats"><div><span>Attended</span><b id="resultAttended">18</b></div><div><span>Total classes</span><b id="resultTotal">24</b></div><div><span>Target</span><b id="resultTarget">85%</b></div></div></section>
+          </div>
+          <div class="notice-disclaimer">Formula: attended classes ÷ total classes × 100. Classes needed assumes every future class is attended. Results are estimates, not an official eligibility determination.</div>
+        </section>
+
+        <section class="page" id="page-assignments">
+          <div class="page-heading"><div><div class="eyebrow">MAKE DEADLINES LESS STRESSFUL</div><h1>Assignment manager<span class="period">.</span></h1><p>Keep track of coursework, due dates, and completed tasks.</p></div><button class="btn primary-btn" id="openAssignment">+ Add assignment</button></div>
+          <div class="stat-grid task-stats"><div class="stat-card"><span class="stat-symbol blue">☷</span><span class="stat-number" id="taskTotal">0</span><span class="stat-name">Total assignments</span></div><div class="stat-card"><span class="stat-symbol orange">◷</span><span class="stat-number" id="taskPending">0</span><span class="stat-name">Pending</span></div><div class="stat-card"><span class="stat-symbol green">✓</span><span class="stat-number" id="taskComplete">0</span><span class="stat-name">Completed</span></div></div>
+          <section class="panel"><div class="panel-heading"><div><h3>Your coursework</h3><p>Stored locally in this browser.</p></div><select id="taskFilter" aria-label="Filter assignments"><option value="All">All assignments</option><option value="Pending">Pending</option><option value="Completed">Completed</option></select></div><div id="taskList" class="task-list"></div><div id="taskEmpty" class="empty-state"><h3>No assignments yet</h3><p>Add an assignment to start organising your coursework.</p><button class="btn primary-btn" id="emptyAddAssignment">+ Add assignment</button></div></section>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="reportModal" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="reportTitle"><div class="modal-heading"><div><div class="eyebrow">COMMUNITY REPORT</div><h2 id="reportTitle">Report an item</h2></div><button class="close-btn" data-close="reportModal" aria-label="Close">×</button></div>
+    <form id="reportForm" class="stack-form">
+      <label>Report type<select name="type"><option>Lost</option><option>Found</option></select></label>
+      <label>Item name<input name="name" maxlength="70" required placeholder="e.g. Black backpack"></label>
+      <div class="two-fields"><label>Category<select name="category"><option>Electronics</option><option>ID & Cards</option><option>Bags</option><option>Keys</option><option>Books</option><option>Other</option></select></label><label>Location<input name="location" maxlength="80" required placeholder="e.g. Library"></label></div>
+      <label>Description<textarea name="description" rows="3" maxlength="250" placeholder="Describe the item without revealing sensitive details"></textarea></label>
+      <label>Contact method<input name="contact" maxlength="100" required placeholder="A safe contact method"></label>
+      <button class="btn primary-btn full-btn" type="submit">Publish report ↗</button>
+    </form>
+  </section></div>
+
+  <div class="modal-backdrop" id="assignmentModal" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="assignmentTitle"><div class="modal-heading"><div><div class="eyebrow">PLAN YOUR COURSEWORK</div><h2 id="assignmentTitle">Add assignment</h2></div><button class="close-btn" data-close="assignmentModal" aria-label="Close">×</button></div>
+    <form id="assignmentForm" class="stack-form">
+      <label>Assignment title<input name="title" required maxlength="100" placeholder="e.g. Logic design worksheet"></label>
+      <label>Subject<input name="subject" required maxlength="70" placeholder="e.g. Digital Electronics"></label>
+      <div class="two-fields"><label>Due date<input name="due" type="date" required></label><label>Priority<select name="priority"><option>Normal</option><option>High</option></select></label></div>
+      <label>Notes<textarea name="notes" rows="2" maxlength="250" placeholder="Optional notes"></textarea></label>
+      <button class="btn primary-btn full-btn" type="submit">Save assignment ↗</button>
+    </form>
+  </section></div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="auth.js"></script>
+</body>
+</html>
